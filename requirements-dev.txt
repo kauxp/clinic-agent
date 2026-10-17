@@ -1,0 +1,5 @@
+# Test and lint tools (CI and local). Not installed in the production image.
+-r requirements.txt
+pytest>=8.0
+httpx>=0.27
+ruff>=0.6

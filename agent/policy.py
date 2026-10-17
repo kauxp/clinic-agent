@@ -92,7 +92,7 @@ def apply_patch(policy: dict, patch: dict) -> dict:
         try:
             value = float(patch.get("value"))
         except (TypeError, ValueError):
-            raise PatchError("param value must be a number")
+            raise PatchError("param value must be a number") from None
         if patch.get("key") != "temperature" or not 0.0 <= value <= 1.0:
             raise PatchError("only temperature in [0,1] may be set")
         p["params"]["temperature"] = value

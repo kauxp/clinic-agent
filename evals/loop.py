@@ -116,7 +116,7 @@ def main():
             targets = [s for s in d["scenario_ids"] if s in BY_ID]
             res = run_suite(dev, cand, args.runs, llm)
             verdict = gate(baseline, res, targets,
-                           lambda s: run_suite([BY_ID[s]], cand, args.runs, llm, start=args.runs))
+                           lambda s, cand=cand: run_suite([BY_ID[s]], cand, args.runs, llm, start=args.runs))
             judged = verdict.pop("judged")  # the evidence the gate decided on; tables and the next baseline use it too
             print(f"  gate: {'ACCEPT' if verdict['accept'] else 'REJECT'} ({verdict['reason']}; flaky={verdict['flaky']})")
             log({"iteration": it, "diagnosis": d, "verdict": verdict, "candidate": P.tag(cand)})

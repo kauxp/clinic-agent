@@ -1,3 +1,10 @@
+# Runtime dependencies (top level). Exact versions are pinned in requirements.lock, which the Docker image installs.
 google-genai>=1.0.0
 python-dotenv>=1.0.0
-pytest>=8.0
+fastapi>=0.115
+uvicorn>=0.30
+prometheus-client>=0.20
+opentelemetry-api>=1.27
+opentelemetry-sdk>=1.27
+opentelemetry-exporter-otlp-proto-http>=1.27
+opentelemetry-instrumentation-fastapi>=0.48b0
