@@ -1,0 +1,6 @@
+apiVersion: v2
+name: clinic-agent
+description: Clinic scheduling agent (HTTP service) with probes, metrics, alerts and a dashboard
+type: application
+version: 0.1.0          # chart version: bump when the templates change
+appVersion: "dev"       # overridden at deploy time by --set image.tag=<git sha>

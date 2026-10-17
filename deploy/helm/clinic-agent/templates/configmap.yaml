@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "clinic-agent.fullname" . }}
+  labels: {{- include "clinic-agent.labels" . | nindent 4 }}
+data:
+  LLM_PROVIDER: {{ .Values.config.llmProvider | quote }}
+  AGENT_POLICY_VERSION: {{ .Values.config.policyVersion | quote }}
+  SESSION_TTL_SECONDS: {{ .Values.config.sessionTtlSeconds | quote }}
+  MAX_SESSIONS: {{ .Values.config.maxSessions | quote }}
+  LOG_LEVEL: {{ .Values.config.logLevel | quote }}
+  LLM_RPM: {{ .Values.config.llmRequestsPerMinute | quote }}
+  AGENT_MODEL: {{ .Values.config.agentModel | quote }}
+  {{- if .Values.tracing.enabled }}
+  OTEL_EXPORTER_OTLP_ENDPOINT: {{ .Values.tracing.otlpEndpoint | quote }}
+  {{- end }}

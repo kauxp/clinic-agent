@@ -1,0 +1,22 @@
+# Prometheus + Alertmanager + Grafana + kube-state-metrics for the local cluster (chart version pinned in scripts).
+prometheus:
+  prometheusSpec:
+    # Pick up ServiceMonitors and PrometheusRules from every namespace, not only this release's.
+    serviceMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    retention: 2d
+    resources:
+      requests: { cpu: 100m, memory: 400Mi }
+grafana:
+  admin:
+    existingSecret: grafana-admin   # created by scripts/cluster-up.sh with a random password; never in git
+    userKey: admin-user
+    passwordKey: admin-password
+  sidecar:
+    dashboards:
+      searchNamespace: ALL          # load the clinic-agent dashboard ConfigMap from the app namespace
+# kind runs these control-plane parts in ways Prometheus can't scrape; skip them to avoid false alerts.
+kubeEtcd: { enabled: false }
+kubeControllerManager: { enabled: false }
+kubeScheduler: { enabled: false }
+kubeProxy: { enabled: false }

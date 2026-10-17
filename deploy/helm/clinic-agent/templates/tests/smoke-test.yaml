@@ -1,0 +1,54 @@
+# `helm test <release>` runs this pod inside the cluster against the Service.
+# Always: ready, version matches the deployed tag, a chat session opens.
+# With the scripted model: a full booking that must commit exactly one write.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "clinic-agent.fullname" . }}-smoke
+  labels: {{- include "clinic-agent.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  restartPolicy: Never
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    seccompProfile: { type: RuntimeDefault }
+  containers:
+    - name: smoke
+      image: "{{ .Values.image.repository }}:{{ include "clinic-agent.imageTag" . }}"
+      imagePullPolicy: {{ .Values.image.pullPolicy }}
+      env:
+        - { name: BASE, value: "http://{{ include "clinic-agent.fullname" . }}:{{ .Values.service.port }}" }
+        - { name: WANT_VERSION, value: {{ include "clinic-agent.imageTag" . | quote }} }
+        - { name: FULL_JOURNEY, value: {{ eq .Values.config.llmProvider "scripted" | ternary "1" "0" | quote }} }
+      command:
+        - python
+        - -c
+        - |
+          import json, os, urllib.request
+          base = os.environ["BASE"]
+          def call(path, body=None):
+              req = urllib.request.Request(base + path, method="POST" if body is not None else "GET",
+                                           data=None if body is None else json.dumps(body).encode(),
+                                           headers={"content-type": "application/json"})
+              with urllib.request.urlopen(req, timeout=60) as r:
+                  return json.loads(r.read())
+          assert call("/readyz")["ready"], "not ready"
+          v = call("/version"); print("version:", v)
+          assert v["version"] == os.environ["WANT_VERSION"], "running version differs from the deployed tag"
+          sid = call("/v1/sessions", {})["session_id"]
+          if os.environ["FULL_JOURNEY"] == "1":
+              for text in ["Hi, I need a GP appointment", "I'm Priya Shah, born 9 May 2001", "Yes, please book it"]:
+                  r = call(f"/v1/sessions/{sid}/messages", {"text": text}); print(r["reply"])
+              assert r["writes_committed"] == 1, "booking did not commit"
+          print("smoke test passed")
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities: { drop: ["ALL"] }
+      resources:
+        requests: { cpu: 50m, memory: 64Mi }
+        limits: { memory: 128Mi }

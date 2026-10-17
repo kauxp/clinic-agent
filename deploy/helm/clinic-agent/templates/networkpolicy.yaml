@@ -1,0 +1,42 @@
+{{- if .Values.networkPolicy.enabled }}
+# Default-deny for this app, then allow only what it needs.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "clinic-agent.fullname" . }}
+  labels: {{- include "clinic-agent.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels: {{- include "clinic-agent.selectorLabels" . | nindent 6 }}
+  policyTypes: [Ingress, Egress]
+  ingress:
+    # Callers in the same namespace, and Prometheus scraping /metrics.
+    - from:
+        - podSelector: {}
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: {{ .Values.networkPolicy.monitoringNamespace }} }
+      ports:
+        - { port: http, protocol: TCP }
+  egress:
+    # DNS
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels: { k8s-app: kube-dns }
+      ports:
+        - { port: 53, protocol: UDP }
+        - { port: 53, protocol: TCP }
+    # Gemini API over HTTPS (external, so no fixed IPs to pin)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16]
+      ports:
+        - { port: 443, protocol: TCP }
+    # Traces to Jaeger (OTLP over HTTP)
+    - to:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: {{ .Values.networkPolicy.tracingNamespace }} }
+      ports:
+        - { port: 4318, protocol: TCP }
+{{- end }}

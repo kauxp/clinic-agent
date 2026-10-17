@@ -1,0 +1,12 @@
+{{- if .Values.podDisruptionBudget.enabled }}
+# Node drains and upgrades keep at least one pod serving.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "clinic-agent.fullname" . }}
+  labels: {{- include "clinic-agent.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels: {{- include "clinic-agent.selectorLabels" . | nindent 6 }}
+{{- end }}

@@ -1,0 +1,5 @@
+# Trivy settings for the misconfiguration scan. The chart needs an image tag to render, so give it a placeholder.
+misconfiguration:
+  helm:
+    set:
+      - image.tag=scan
