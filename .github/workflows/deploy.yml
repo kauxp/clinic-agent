@@ -1,0 +1,31 @@
+# CD to the local kind cluster. GitHub's hosted runners can't reach a laptop, so this runs on a
+# self-hosted runner registered on the machine that hosts the cluster. The "local" environment can
+# require a reviewer's approval before the job starts (Settings -> Environments -> local).
+# Without the runner, `make deploy TAG=<sha>` performs the same steps by hand.
+name: deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Image tag to deploy (12-char commit SHA built by CI on main)"
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-local       # never two deploys at once
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    environment: local
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy the CI-built image for that commit
+        env:
+          TAG: ${{ inputs.tag }}
+          SOURCE: ghcr
+        run: ./scripts/deploy.sh
