@@ -5,7 +5,11 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: {{ include "clinic-agent.fullname" . }}-smoke
-  labels: {{- include "clinic-agent.labels" . | nindent 4 }}
+  # Deliberately NOT the app's labels: otherwise the Service would route to this pod and the app's
+  # NetworkPolicy (which only allows DNS, HTTPS and OTLP out) would block it from calling the Service.
+  labels:
+    app.kubernetes.io/name: {{ include "clinic-agent.name" . }}-smoke
+    app.kubernetes.io/instance: {{ .Release.Name }}
   annotations:
     helm.sh/hook: test
     helm.sh/hook-delete-policy: before-hook-creation
