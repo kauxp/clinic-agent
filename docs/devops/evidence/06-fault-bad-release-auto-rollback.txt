@@ -1,0 +1,36 @@
+== Fault demo A: a bad release (model switched to gemini, but no API key secret in the cluster)
+Symptom to expect: new pods never become ready. Hypothesis: /readyz fails because GEMINI_API_KEY is missing.
+
+$ helm upgrade clinic-agent ... --set config.llmProvider=gemini --atomic --wait --timeout 60s   (started in background)
+
+--- 20 s later: the new pod is Running but not Ready; both old pods keep serving (maxUnavailable: 0)
+$ kubectl -n clinic get pods
+NAME                            READY   STATUS    RESTARTS   AGE
+clinic-agent-745d5f7887-h6fw6   1/1     Running   0          4m18s
+clinic-agent-745d5f7887-x7w42   1/1     Running   0          4m14s
+clinic-agent-987cd787d-frmwt    0/1     Running   0          19s
+
+--- Evidence: ask the new pod why it is not ready
+$ kubectl -n clinic exec clinic-agent-987cd787d-frmwt -- python -c <GET localhost:8000/readyz>
+503 {"ready":false,"reason":"GEMINI_API_KEY is not set (create the Kubernetes secret)"}
+$ kubectl -n clinic describe pod (events)
+Warning  Unhealthy  1s (x5 over 17s)  kubelet            spec.containers{clinic-agent}: Readiness probe failed: HTTP probe failed with statuscode: 503
+
+--- Helm gave up after 60 s and rolled back by itself (--atomic)
+Error: UPGRADE FAILED: release clinic-agent failed, and has been rolled back due to atomic being set: context deadline exceeded
+
+$ helm history clinic-agent -n clinic --max 3
+REVISION	UPDATED                 	STATUS    	CHART             	APP VERSION	DESCRIPTION                                             
+3       	Sun Oct 18 14:37:50 2026	superseded	clinic-agent-0.1.0	dev        	image ghcr.io/kauxp/clinic-agent:27464722832d           
+4       	Sun Oct 18 14:41:50 2026	failed    	clinic-agent-0.1.0	dev        	Upgrade "clinic-agent" failed: context deadline exceeded
+5       	Sun Oct 18 14:42:51 2026	deployed  	clinic-agent-0.1.0	dev        	Rollback to 3                                           
+
+--- Verification: back on the good release, all pods ready, journey passes
+deployment "clinic-agent" successfully rolled out
+NAME                            READY   STATUS        RESTARTS   AGE
+clinic-agent-745d5f7887-h6fw6   1/1     Running       0          5m
+clinic-agent-745d5f7887-x7w42   1/1     Running       0          4m56s
+clinic-agent-987cd787d-frmwt    0/1     Terminating   0          61s
+Phase:          Succeeded
+version: {'version': '27464722832d', 'policy_version': 0, 'llm_provider': 'scripted'}
+smoke test passed

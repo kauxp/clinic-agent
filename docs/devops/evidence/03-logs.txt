@@ -1,0 +1,10 @@
+$ kubectl -n clinic logs deploy/clinic-agent --tail=8
+Found 2 pods, using pod/clinic-agent-745d5f7887-h6fw6
+{"ts": "2026-10-18T09:08:23.810Z", "level": "INFO", "logger": "clinic.api", "msg": "session created", "session_id": "184ada3c5b4a4424abe47bbde687dfc2", "event": "session_created", "trace_id": "b1213bb66b1cd22915558aea96c845a2"}
+{"ts": "2026-10-18T09:08:23.810Z", "level": "INFO", "logger": "clinic.api", "msg": "request", "request_id": "4957996ed18f4c22", "route": "/v1/sessions", "method": "POST", "status": 201, "duration_ms": 4.0, "trace_id": "b1213bb66b1cd22915558aea96c845a2"}
+{"ts": "2026-10-18T09:08:23.865Z", "level": "INFO", "logger": "clinic.api", "msg": "turn", "session_id": "184ada3c5b4a4424abe47bbde687dfc2", "event": "turn", "outcome": "ok", "trace_id": "942df2e389649b700afde30fa8fe8a5d"}
+{"ts": "2026-10-18T09:08:23.866Z", "level": "INFO", "logger": "clinic.api", "msg": "request", "request_id": "f0b44539830b46c7", "route": "/v1/sessions/{session_id}/messages", "method": "POST", "status": 200, "duration_ms": 4.1, "trace_id": "942df2e389649b700afde30fa8fe8a5d"}
+{"ts": "2026-10-18T09:08:23.908Z", "level": "INFO", "logger": "clinic.api", "msg": "turn", "session_id": "184ada3c5b4a4424abe47bbde687dfc2", "event": "turn", "outcome": "ok", "trace_id": "63b8f56a2273642f788473eaf57f3e89"}
+{"ts": "2026-10-18T09:08:23.909Z", "level": "INFO", "logger": "clinic.api", "msg": "request", "request_id": "57d10d68b5684ea7", "route": "/v1/sessions/{session_id}/messages", "method": "POST", "status": 200, "duration_ms": 8.7, "trace_id": "63b8f56a2273642f788473eaf57f3e89"}
+{"ts": "2026-10-18T09:08:23.944Z", "level": "INFO", "logger": "clinic.api", "msg": "turn", "session_id": "184ada3c5b4a4424abe47bbde687dfc2", "event": "turn", "outcome": "ok", "trace_id": "32a91bee5571bd64a0f426732ee7faa8"}
+{"ts": "2026-10-18T09:08:23.945Z", "level": "INFO", "logger": "clinic.api", "msg": "request", "request_id": "2f42c3ea07b04d41", "route": "/v1/sessions/{session_id}/messages", "method": "POST", "status": 200, "duration_ms": 3.8, "trace_id": "32a91bee5571bd64a0f426732ee7faa8"}

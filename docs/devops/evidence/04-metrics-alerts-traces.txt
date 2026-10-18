@@ -1,0 +1,43 @@
+== Prometheus scrape targets for clinic-agent
+  clinic-agent-745d5f7887-h6fw6    up    http://10.244.1.11:8000/metrics
+  clinic-agent-745d5f7887-x7w42    up    http://10.244.2.8:8000/metrics
+
+== clinic_build_info
+   {'__name__': 'clinic_build_info', 'pod': 'clinic-agent-745d5f7887-h6fw6', 'policy': '0', 'provider': 'scripted', 'version': '27464722832d'} 1
+   {'__name__': 'clinic_build_info', 'pod': 'clinic-agent-745d5f7887-x7w42', 'policy': '0', 'provider': 'scripted', 'version': '27464722832d'} 1
+
+== sum by (route, status) (clinic_http_requests_total{route=~"/v1/.*"})
+   {'route': '/v1/sessions', 'status': '201'} 2
+   {'route': '/v1/sessions/{session_id}/messages', 'status': '200'} 6
+
+== sum by (tool, ok) (clinic_tool_calls_total)
+   {'ok': 'true', 'tool': 'verify_patient'} 2
+   {'ok': 'true', 'tool': 'search_slots'} 2
+   {'ok': 'true', 'tool': 'book_appointment'} 2
+
+== sum by (tool) (clinic_writes_committed_total)
+   {'tool': 'book_appointment'} 2
+
+== sum by (provider, outcome) (clinic_llm_calls_total)
+   {'outcome': 'text', 'provider': 'scripted'} 6
+   {'outcome': 'tool_call', 'provider': 'scripted'} 6
+
+== clinic:chat_errors:ratio5m
+
+== Alert rules loaded (clinic-agent.alerts)
+  [clinic-agent.alerts] ClinicAgentHighErrorRate  state=inactive
+  [clinic-agent.alerts] ClinicAgentSlowReplies  state=inactive
+  [clinic-agent.alerts] ClinicAgentModelUnavailable  state=inactive
+  [clinic-agent.alerts] ClinicAgentNoReadyPods  state=inactive
+  [clinic-agent.alerts] ClinicAgentEmergencyHandoff  state=inactive
+  [clinic-agent.sli] clinic:chat_requests:rate5m  state=recording
+  [clinic-agent.sli] clinic:chat_errors:ratio5m  state=recording
+  [clinic-agent.sli] clinic:reply_latency:p95_5m  state=recording
+
+== Jaeger: recent traces for service clinic-agent
+  trace 942df2e389649b700afde30fa8fe8a5d: POST /v1/sessions/{session_id}/messages (6.0 ms) > agent.respond (0.8 ms) > llm.chat (0.1 ms)
+  trace 63b8f56a2273642f788473eaf57f3e89: POST /v1/sessions/{session_id}/messages (10.5 ms) > agent.respond (5.9 ms) > llm.chat (0.1 ms) > llm.chat (0.1 ms) > llm.chat (0.1 ms)
+  trace 32a91bee5571bd64a0f426732ee7faa8: POST /v1/sessions/{session_id}/messages (5.9 ms) > agent.respond (1.1 ms) > llm.chat (0.1 ms) > llm.chat (0.1 ms)
+
+== Grafana dashboards tagged clinic-agent
+   Clinic agent /d/clinic-agent/clinic-agent
