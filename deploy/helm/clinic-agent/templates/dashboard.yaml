@@ -1,0 +1,12 @@
+{{- if .Values.monitoring.dashboard }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "clinic-agent.fullname" . }}-dashboard
+  labels:
+    {{- include "clinic-agent.labels" . | nindent 4 }}
+    grafana_dashboard: "1"
+data:
+  clinic-agent.json: |-
+{{ .Files.Get "dashboards/clinic-agent.json" | indent 4 }}
+{{- end }}

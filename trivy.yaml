@@ -1,0 +1,4 @@
+misconfiguration:
+  helm:
+    set:
+      - image.tag=scan

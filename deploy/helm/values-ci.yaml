@@ -1,0 +1,6 @@
+image:
+  pullPolicy: Never
+config:
+  llmProvider: scripted
+tracing:
+  enabled: false

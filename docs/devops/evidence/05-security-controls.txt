@@ -1,0 +1,27 @@
+== 1. Pod Security "restricted" is enforced: a root pod is refused in namespace clinic
+$ kubectl -n clinic run root-test --image=busybox --overrides={"spec":{"securityContext":{"runAsUser":0}}} -- sleep 5
+Error from server (Forbidden): pods "root-test" is forbidden: violates PodSecurity "restricted:latest": allowPrivilegeEscalation != false (container "root-test" must set securityContext.allowPrivilegeEscalation=false), unrestricted capabilities (container "root-test" must set securityContext.capabilities.drop=["ALL"]), runAsNonRoot != true (pod or container "root-test" must set securityContext.run
+
+== 2. The app container runs as uid 10001 with a read-only root filesystem
+$ kubectl -n clinic exec clinic-agent-7f9b477c46-qdlrw -- id
+uid=10001(app) gid=10001(app) groups=10001(app)
+$ kubectl -n clinic exec clinic-agent-7f9b477c46-qdlrw -- touch /app/x
+touch: cannot touch '/app/x': Read-only file system
+command terminated with exit code 1
+
+== 3. NetworkPolicy: the app may not open arbitrary connections (port 80 out is not allowed; DNS is)
+$ kubectl -n clinic exec clinic-agent-7f9b477c46-qdlrw -- python -c <connect to example.com:80>
+dns example.com -> 104.20.23.154
+port 80: blocked -> TimeoutError
+
+== 4. NetworkPolicy: a pod in another namespace cannot reach the app (control: it can reach an unprotected service)
+$ kubectl -n default exec np-test -- wget -T 4 -qO- http://clinic-agent.clinic.svc/healthz
+failed: connection timed out (blocked)
+$ kubectl -n default exec np-test -- wget -T 4 -qO- http://kube-dns.kube-system.svc:9153/metrics
+# HELP coredns_build_info A metric with a constant '1' value labeled by version, revision, and goversion from which CoreDNS was built.
+(reachable: the network itself works)
+
+== 5. The ServiceAccount token is not mounted
+$ kubectl -n clinic exec clinic-agent-7f9b477c46-qdlrw -- ls /var/run/secrets/kubernetes.io/serviceaccount
+ls: cannot access '/var/run/secrets/kubernetes.io/serviceaccount': No such file or directory
+command terminated with exit code 2

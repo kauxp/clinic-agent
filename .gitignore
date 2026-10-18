@@ -20,3 +20,7 @@ __pycache__/
 .vscode/
 .idea/
 .DS_Store
+
+# build and lint caches
+.ruff_cache/
+*.tar

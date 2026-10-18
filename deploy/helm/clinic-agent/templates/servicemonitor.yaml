@@ -1,0 +1,14 @@
+{{- if and .Values.monitoring.serviceMonitor (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "clinic-agent.fullname" . }}
+  labels: {{- include "clinic-agent.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels: {{- include "clinic-agent.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+{{- end }}

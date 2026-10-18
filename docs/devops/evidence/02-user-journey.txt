@@ -1,0 +1,11 @@
+$ make smoke   (port-forward to svc/clinic-agent, then a booking)
+version: {"version":"81ff8d5c9fdc","policy_version":0,"llm_provider":"scripted"}
+patient: Hi, I need a GP appointment next week, mornings please
+agent:   Happy to help. Could I have your full name and date of birth?
+        writes_committed: 0
+patient: I'm Priya Shah, born 9 May 2001
+agent:   I can offer Thursday 2026-10-08 at 09:00 with Dr. Mehta. Shall I book it?
+        writes_committed: 0
+patient: Yes, please book it
+agent:   You're booked for 2026-10-08 09:00 with Dr. Mehta.
+        writes_committed: 1

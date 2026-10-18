@@ -1,0 +1,27 @@
+name: deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Image tag to deploy (12-char commit SHA built by CI on main)"
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-local
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    environment: local
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy the CI-built image for that commit
+        env:
+          TAG: ${{ inputs.tag }}
+          SOURCE: ghcr
+        run: ./scripts/deploy.sh

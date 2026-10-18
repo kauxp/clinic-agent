@@ -1,0 +1,3 @@
+config:
+  llmProvider: gemini
+  policyVersion: "latest"

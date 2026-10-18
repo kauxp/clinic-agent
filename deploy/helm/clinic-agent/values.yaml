@@ -1,0 +1,70 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/kauxp/clinic-agent
+  tag: ""
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+config:
+  llmProvider: gemini
+  policyVersion: "latest"
+  sessionTtlSeconds: 1800
+  maxSessions: 500
+  logLevel: INFO
+  llmRequestsPerMinute: 10
+  agentModel: gemini-3.5-flash-lite
+
+llmSecret:
+  name: clinic-agent-llm
+  key: GEMINI_API_KEY
+
+service:
+  type: ClusterIP
+  port: 80
+  sessionAffinity: ClientIP
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 192Mi
+  limits:
+    cpu: "1"
+    memory: 512Mi
+
+probes:
+  startup:   { path: /healthz, periodSeconds: 2, failureThreshold: 30 }
+  liveness:  { path: /healthz, periodSeconds: 10, failureThreshold: 3 }
+  readiness: { path: /readyz,  periodSeconds: 5,  failureThreshold: 2 }
+
+strategy:
+  maxSurge: 1
+  maxUnavailable: 0
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 70
+
+networkPolicy:
+  enabled: true
+  monitoringNamespace: monitoring
+  tracingNamespace: observability
+
+tracing:
+  enabled: true
+  otlpEndpoint: http://jaeger.observability.svc.cluster.local:4318
+
+monitoring:
+  serviceMonitor: true
+  rules: true
+  dashboard: true
+  slo:
+    availability: 0.995
+    latencySeconds: 10

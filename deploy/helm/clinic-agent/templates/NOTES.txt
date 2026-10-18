@@ -1,0 +1,7 @@
+clinic-agent {{ include "clinic-agent.imageTag" . }} (policy {{ .Values.config.policyVersion }}, model provider {{ .Values.config.llmProvider }})
+
+Reach it (the Service is ClusterIP only):
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "clinic-agent.fullname" . }} 8080:{{ .Values.service.port }}
+  curl localhost:8080/version
+Check it end to end:
+  helm test {{ .Release.Name }} -n {{ .Release.Namespace }}

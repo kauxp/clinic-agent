@@ -1,0 +1,20 @@
+== Fault demo B: one pod is killed while traffic flows
+Client: a pod inside namespace clinic opens a new chat session every 0.2 s for 40 s (new sessions, so any pod may answer).
+
+t=10s $ kubectl -n clinic delete pod clinic-agent-7f9b477c46-qdlrw
+pod "clinic-agent-7f9b477c46-qdlrw" deleted from clinic namespace
+t=13s $ kubectl -n clinic get pods   (replacement being created by the ReplicaSet)
+NAME                            READY   STATUS        RESTARTS   AGE
+clinic-agent-7f9b477c46-lzt77   0/1     Running       0          3s
+clinic-agent-7f9b477c46-qdlrw   1/1     Terminating   0          2m55s
+clinic-agent-7f9b477c46-vtr7q   1/1     Running       0          2m50s
+
+t=40s client result:
+requests ok=186 failed=0 errors={}
+
+--- Verification: back to 2/2 ready
+NAME           READY   UP-TO-DATE   AVAILABLE   AGE
+clinic-agent   2/2     2            2           6h29m
+NAME READY STATUS NODE
+clinic-agent-7f9b477c46-lzt77 1/1 Running clinic-worker
+clinic-agent-7f9b477c46-vtr7q 1/1 Running clinic-worker2

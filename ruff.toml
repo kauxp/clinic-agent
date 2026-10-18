@@ -1,0 +1,6 @@
+line-length = 120
+target-version = "py312"
+extend-exclude = [".venv", "runs"]
+
+[lint]
+select = ["E9", "F", "B"]

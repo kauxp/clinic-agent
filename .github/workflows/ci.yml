@@ -1,0 +1,128 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE: ghcr.io/kauxp/clinic-agent
+  # On a PR, github.sha is a temporary merge commit; tag with the PR's real head commit instead.
+  COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.lock
+      - run: pip install -r requirements.lock pytest httpx ruff
+      - run: ruff check .
+      - run: pytest -q
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Secret scan (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Dependency vulnerabilities (pip-audit)
+        run: pip install pip-audit && pip-audit -r requirements.lock --strict
+      - name: Dockerfile and Helm misconfiguration scan (trivy)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: config
+          scan-ref: .
+          trivy-config: trivy.yaml
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+
+  build:
+    needs: [test, security]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: tag
+        run: echo "tag=${COMMIT::12}" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@v3
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: ${{ env.IMAGE }}:${{ steps.tag.outputs.tag }}
+          build-args: APP_VERSION=${{ steps.tag.outputs.tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Image vulnerability scan (trivy)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ env.IMAGE }}:${{ steps.tag.outputs.tag }}
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+      - name: Save image for the e2e job
+        run: docker save "$IMAGE:${{ steps.tag.outputs.tag }}" -o image.tar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: image
+          path: image.tar
+          retention-days: 1
+      - name: Push to GHCR (main only)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker push "$IMAGE:${{ steps.tag.outputs.tag }}"
+
+  e2e:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ needs.build.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: image
+      - run: docker load -i image.tar
+      - uses: helm/kind-action@v1
+        with:
+          cluster_name: ci
+      - name: Deploy with Helm (rolls back by itself if pods never become ready)
+        run: |
+          kind load docker-image "$IMAGE:$TAG" --name ci
+          kubectl apply -f deploy/k8s/namespace.yaml
+          helm upgrade --install clinic-agent deploy/helm/clinic-agent -n clinic \
+            -f deploy/helm/values-ci.yaml --set image.repository="$IMAGE" --set image.tag="$TAG" \
+            --atomic --wait --timeout 3m
+      - name: In-cluster smoke test (version check + booking journey)
+        run: helm test clinic-agent -n clinic --logs
+      - name: Show what ran
+        if: always()
+        run: |
+          helm history clinic-agent -n clinic || true
+          kubectl -n clinic get deploy,pods,svc -o wide || true
+          kubectl -n clinic logs deploy/clinic-agent --tail=50 || true

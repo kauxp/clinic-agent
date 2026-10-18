@@ -1,0 +1,58 @@
+{{- if and .Values.monitoring.rules (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
+{{- $job := include "clinic-agent.fullname" . }}
+{{- $slo := .Values.monitoring.slo }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "clinic-agent.fullname" . }}
+  labels: {{- include "clinic-agent.labels" . | nindent 4 }}
+spec:
+  groups:
+    - name: clinic-agent.sli
+      rules:
+        - record: clinic:chat_requests:rate5m
+          expr: sum(rate(clinic_http_requests_total{job="{{ $job }}",route=~"/v1/.*"}[5m]))
+        - record: clinic:chat_errors:ratio5m
+          expr: |
+            sum(rate(clinic_http_requests_total{job="{{ $job }}",route=~"/v1/.*",status=~"5.."}[5m]))
+            / clamp_min(sum(rate(clinic_http_requests_total{job="{{ $job }}",route=~"/v1/.*"}[5m])), 1e-9)
+        - record: clinic:reply_latency:p95_5m
+          expr: |
+            histogram_quantile(0.95, sum by (le) (rate(clinic_http_request_duration_seconds_bucket{job="{{ $job }}",route="/v1/sessions/{session_id}/messages"}[5m])))
+    - name: clinic-agent.alerts
+      rules:
+        - alert: ClinicAgentHighErrorRate
+          expr: clinic:chat_errors:ratio5m > {{ subf 1.0 $slo.availability }} and clinic:chat_requests:rate5m > 0
+          for: 5m
+          labels: { severity: page }
+          annotations:
+            summary: "More than {{ mulf (subf 1.0 $slo.availability) 100 }}% of chat requests are failing"
+            runbook: "docs/devops/RUNBOOK.md#clinicagenthigherrorrate"
+        - alert: ClinicAgentSlowReplies
+          expr: clinic:reply_latency:p95_5m > {{ $slo.latencySeconds }}
+          for: 10m
+          labels: { severity: warning }
+          annotations:
+            summary: "p95 agent reply time is above {{ $slo.latencySeconds }}s"
+            runbook: "docs/devops/RUNBOOK.md#clinicagentslowreplies"
+        - alert: ClinicAgentModelUnavailable
+          expr: sum(rate(clinic_llm_calls_total{job="{{ $job }}",outcome="infra_error"}[5m])) > 0
+          for: 5m
+          labels: { severity: page }
+          annotations:
+            summary: "Calls to the model provider are failing after retries"
+            runbook: "docs/devops/RUNBOOK.md#clinicagentmodelunavailable"
+        - alert: ClinicAgentNoReadyPods
+          expr: sum(kube_deployment_status_replicas_available{deployment="{{ $job }}"}) < 1
+          for: 2m
+          labels: { severity: page }
+          annotations:
+            summary: "No clinic-agent pod is ready to serve"
+            runbook: "docs/devops/RUNBOOK.md#clinicagentnoreadypods"
+        - alert: ClinicAgentEmergencyHandoff
+          expr: increase(clinic_escalations_total{job="{{ $job }}",urgency="emergency"}[5m]) > 0
+          labels: { severity: info }
+          annotations:
+            summary: "The agent handed a possible emergency to staff"
+            runbook: "docs/devops/RUNBOOK.md#clinicagentemergencyhandoff"
+{{- end }}
