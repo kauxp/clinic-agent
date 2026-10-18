@@ -6,30 +6,30 @@ $ helm upgrade clinic-agent ... --set config.llmProvider=gemini --atomic --wait 
 --- 20 s later: the new pod is Running but not Ready; both old pods keep serving (maxUnavailable: 0)
 $ kubectl -n clinic get pods
 NAME                            READY   STATUS    RESTARTS   AGE
-clinic-agent-5596c9bc64-5s8ql   0/1     Running   0          19s
-clinic-agent-87695b668-swxz9    1/1     Running   0          2m23s
-clinic-agent-87695b668-v9jrq    1/1     Running   0          2m27s
+clinic-agent-7cf64c885d-lhz7l   0/1     Running   0          19s
+clinic-agent-7f9b477c46-qdlrw   1/1     Running   0          105s
+clinic-agent-7f9b477c46-vtr7q   1/1     Running   0          100s
 
 --- Evidence: ask the new pod why it is not ready
-$ kubectl -n clinic exec clinic-agent-5596c9bc64-5s8ql -- python -c <GET localhost:8000/readyz>
+$ kubectl -n clinic exec clinic-agent-7cf64c885d-lhz7l -- python -c <GET localhost:8000/readyz>
 503 {"ready":false,"reason":"GEMINI_API_KEY is not set (create the Kubernetes secret)"}
 $ kubectl -n clinic describe pod (events)
-Warning  Unhealthy  1s (x5 over 16s)  kubelet            spec.containers{clinic-agent}: Readiness probe failed: HTTP probe failed with statuscode: 503
+Warning  Unhealthy  0s (x5 over 16s)  kubelet            spec.containers{clinic-agent}: Readiness probe failed: HTTP probe failed with statuscode: 503
 
 --- Helm gave up after 60 s and rolled back by itself (--atomic)
 Error: UPGRADE FAILED: release clinic-agent failed, and has been rolled back due to atomic being set: context deadline exceeded
 
 $ helm history clinic-agent -n clinic --max 3
 REVISION	UPDATED                 	STATUS    	CHART             	APP VERSION	DESCRIPTION                                             
-2       	Sun Oct 18 14:56:41 2026	superseded	clinic-agent-0.1.0	dev        	image ghcr.io/kauxp/clinic-agent:8bba26f52bc2           
-3       	Sun Oct 18 14:58:50 2026	failed    	clinic-agent-0.1.0	dev        	Upgrade "clinic-agent" failed: context deadline exceeded
-4       	Sun Oct 18 14:59:51 2026	deployed  	clinic-agent-0.1.0	dev        	Rollback to 2                                           
+7       	Sun Oct 18 21:22:32 2026	superseded	clinic-agent-0.1.0	dev        	image ghcr.io/kauxp/clinic-agent:81ff8d5c9fdc           
+8       	Sun Oct 18 21:23:58 2026	failed    	clinic-agent-0.1.0	dev        	Upgrade "clinic-agent" failed: context deadline exceeded
+9       	Sun Oct 18 21:25:00 2026	deployed  	clinic-agent-0.1.0	dev        	Rollback to 7                                           
 
 --- Verification: back on the good release, all pods ready, journey passes
 deployment "clinic-agent" successfully rolled out
-NAME                           READY   STATUS    RESTARTS   AGE
-clinic-agent-87695b668-swxz9   1/1     Running   0          3m14s
-clinic-agent-87695b668-v9jrq   1/1     Running   0          3m18s
+NAME                            READY   STATUS    RESTARTS   AGE
+clinic-agent-7f9b477c46-qdlrw   1/1     Running   0          2m36s
+clinic-agent-7f9b477c46-vtr7q   1/1     Running   0          2m31s
 Phase:          Succeeded
-version: {'version': '8bba26f52bc2', 'policy_version': 0, 'llm_provider': 'scripted'}
+version: {'version': '81ff8d5c9fdc', 'policy_version': 0, 'llm_provider': 'scripted'}
 smoke test passed

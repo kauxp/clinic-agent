@@ -1,22 +1,26 @@
 == Release control demo C: manual rollback to an older commit, then forward again
 $ curl /version   (before)
-{"version":"8bba26f52bc2","policy_version":0,"llm_provider":"scripted"}
+{"version":"81ff8d5c9fdc","policy_version":0,"llm_provider":"scripted"}
 
 $ helm rollback clinic-agent 1 -n clinic --wait      (revision 1 = image 5fc2b3acfd56)
 Rollback was a success! Happy Helming!
 $ curl /version
 {"version":"5fc2b3acfd56","policy_version":0,"llm_provider":"scripted"}
 
-$ helm rollback clinic-agent 4 -n clinic --wait      (back to the current release, image 8bba26f52bc2)
+$ helm rollback clinic-agent 9 -n clinic --wait      (back to the current release, image 81ff8d5c9fdc)
 Rollback was a success! Happy Helming!
 $ curl /version
-{"version":"8bba26f52bc2","policy_version":0,"llm_provider":"scripted"}
+{"version":"81ff8d5c9fdc","policy_version":0,"llm_provider":"scripted"}
 
 $ helm history clinic-agent -n clinic
 REVISION	UPDATED                 	STATUS    	CHART             	APP VERSION	DESCRIPTION                                             
-1       	Sun Oct 18 14:56:02 2026	superseded	clinic-agent-0.1.0	dev        	Install complete                                        
 2       	Sun Oct 18 14:56:41 2026	superseded	clinic-agent-0.1.0	dev        	image ghcr.io/kauxp/clinic-agent:8bba26f52bc2           
 3       	Sun Oct 18 14:58:50 2026	failed    	clinic-agent-0.1.0	dev        	Upgrade "clinic-agent" failed: context deadline exceeded
 4       	Sun Oct 18 14:59:51 2026	superseded	clinic-agent-0.1.0	dev        	Rollback to 2                                           
 5       	Sun Oct 18 15:00:54 2026	superseded	clinic-agent-0.1.0	dev        	Rollback to 1                                           
-6       	Sun Oct 18 15:01:06 2026	deployed  	clinic-agent-0.1.0	dev        	Rollback to 4                                           
+6       	Sun Oct 18 15:01:06 2026	superseded	clinic-agent-0.1.0	dev        	Rollback to 4                                           
+7       	Sun Oct 18 21:22:32 2026	superseded	clinic-agent-0.1.0	dev        	image ghcr.io/kauxp/clinic-agent:81ff8d5c9fdc           
+8       	Sun Oct 18 21:23:58 2026	failed    	clinic-agent-0.1.0	dev        	Upgrade "clinic-agent" failed: context deadline exceeded
+9       	Sun Oct 18 21:25:00 2026	superseded	clinic-agent-0.1.0	dev        	Rollback to 7                                           
+10      	Sun Oct 18 21:26:01 2026	superseded	clinic-agent-0.1.0	dev        	Rollback to 1                                           
+11      	Sun Oct 18 21:26:14 2026	deployed  	clinic-agent-0.1.0	dev        	Rollback to 9                                           

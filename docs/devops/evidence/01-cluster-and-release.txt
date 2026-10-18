@@ -1,36 +1,42 @@
 $ helm history clinic-agent -n clinic
-REVISION	UPDATED                 	STATUS    	CHART             	APP VERSION	DESCRIPTION                                  
-1       	Sun Oct 18 14:56:02 2026	superseded	clinic-agent-0.1.0	dev        	Install complete                             
-2       	Sun Oct 18 14:56:41 2026	deployed  	clinic-agent-0.1.0	dev        	image ghcr.io/kauxp/clinic-agent:8bba26f52bc2
+REVISION	UPDATED                 	STATUS    	CHART             	APP VERSION	DESCRIPTION                                             
+1       	Sun Oct 18 14:56:02 2026	superseded	clinic-agent-0.1.0	dev        	Install complete                                        
+2       	Sun Oct 18 14:56:41 2026	superseded	clinic-agent-0.1.0	dev        	image ghcr.io/kauxp/clinic-agent:8bba26f52bc2           
+3       	Sun Oct 18 14:58:50 2026	failed    	clinic-agent-0.1.0	dev        	Upgrade "clinic-agent" failed: context deadline exceeded
+4       	Sun Oct 18 14:59:51 2026	superseded	clinic-agent-0.1.0	dev        	Rollback to 2                                           
+5       	Sun Oct 18 15:00:54 2026	superseded	clinic-agent-0.1.0	dev        	Rollback to 1                                           
+6       	Sun Oct 18 15:01:06 2026	superseded	clinic-agent-0.1.0	dev        	Rollback to 4                                           
+7       	Sun Oct 18 21:22:32 2026	deployed  	clinic-agent-0.1.0	dev        	image ghcr.io/kauxp/clinic-agent:81ff8d5c9fdc           
 
 $ kubectl get nodes
-NAME                   STATUS   ROLES           AGE   VERSION
-clinic-control-plane   Ready    control-plane   30m   v1.37.0
-clinic-worker          Ready    <none>          30m   v1.37.0
-clinic-worker2         Ready    <none>          30m   v1.37.0
+NAME                   STATUS   ROLES           AGE     VERSION
+clinic-control-plane   Ready    control-plane   6h55m   v1.37.0
+clinic-worker          Ready    <none>          6h55m   v1.37.0
+clinic-worker2         Ready    <none>          6h55m   v1.37.0
 
 $ kubectl -n clinic get deploy,pods,svc,pdb,networkpolicy -o wide
-NAME                           READY   UP-TO-DATE   AVAILABLE   AGE    CONTAINERS     IMAGES                                    SELECTOR
-deployment.apps/clinic-agent   2/2     2            2           102s   clinic-agent   ghcr.io/kauxp/clinic-agent:8bba26f52bc2   app.kubernetes.io/instance=clinic-agent,app.kubernetes.io/name=clinic-agent
+NAME                           READY   UP-TO-DATE   AVAILABLE   AGE     CONTAINERS     IMAGES                                    SELECTOR
+deployment.apps/clinic-agent   2/2     2            2           6h26m   clinic-agent   ghcr.io/kauxp/clinic-agent:81ff8d5c9fdc   app.kubernetes.io/instance=clinic-agent,app.kubernetes.io/name=clinic-agent
 
-NAME                               READY   STATUS      RESTARTS   AGE   IP            NODE             NOMINATED NODE   READINESS GATES
-pod/clinic-agent-87695b668-swxz9   1/1     Running     0          58s   10.244.2.12   clinic-worker2   <none>           <none>
-pod/clinic-agent-87695b668-v9jrq   1/1     Running     0          62s   10.244.1.23   clinic-worker    <none>           <none>
-pod/clinic-agent-smoke             0/1     Completed   0          52s   10.244.1.24   clinic-worker    <none>           <none>
+NAME                                READY   STATUS      RESTARTS   AGE     IP            NODE             NOMINATED NODE   READINESS GATES
+pod/clinic-agent-7f9b477c46-qdlrw   1/1     Running     0          18s     10.244.1.31   clinic-worker    <none>           <none>
+pod/clinic-agent-7f9b477c46-vtr7q   1/1     Running     0          13s     10.244.2.16   clinic-worker2   <none>           <none>
+pod/clinic-agent-87695b668-pnr8m    0/1     Completed   0          6h21m   10.244.2.15   clinic-worker2   <none>           <none>
+pod/clinic-agent-smoke              0/1     Completed   0          5s      10.244.1.32   clinic-worker    <none>           <none>
 
-NAME                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE    SELECTOR
-service/clinic-agent   ClusterIP   10.96.229.115   <none>        80/TCP    102s   app.kubernetes.io/instance=clinic-agent,app.kubernetes.io/name=clinic-agent
+NAME                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE     SELECTOR
+service/clinic-agent   ClusterIP   10.96.229.115   <none>        80/TCP    6h26m   app.kubernetes.io/instance=clinic-agent,app.kubernetes.io/name=clinic-agent
 
 NAME                                      MIN AVAILABLE   MAX UNAVAILABLE   ALLOWED DISRUPTIONS   AGE
-poddisruptionbudget.policy/clinic-agent   1               N/A               1                     102s
+poddisruptionbudget.policy/clinic-agent   1               N/A               1                     6h26m
 
 NAME                                           POD-SELECTOR                                                                  AGE
-networkpolicy.networking.k8s.io/clinic-agent   app.kubernetes.io/instance=clinic-agent,app.kubernetes.io/name=clinic-agent   102s
+networkpolicy.networking.k8s.io/clinic-agent   app.kubernetes.io/instance=clinic-agent,app.kubernetes.io/name=clinic-agent   6h26m
 
 $ kubectl -n clinic get deploy clinic-agent -o jsonpath={image}{version label}
-ghcr.io/kauxp/clinic-agent:8bba26f52bc2
-8bba26f52bc2
+ghcr.io/kauxp/clinic-agent:81ff8d5c9fdc
+81ff8d5c9fdc
 
 $ kubectl get ns clinic --show-labels
-NAME     STATUS   AGE   LABELS
-clinic   Active   30m   kubernetes.io/metadata.name=clinic,pod-security.kubernetes.io/enforce=restricted,pod-security.kubernetes.io/warn=restricted
+NAME     STATUS   AGE     LABELS
+clinic   Active   6h55m   kubernetes.io/metadata.name=clinic,pod-security.kubernetes.io/enforce=restricted,pod-security.kubernetes.io/warn=restricted
