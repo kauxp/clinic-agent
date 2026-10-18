@@ -45,9 +45,9 @@ a) Real model, image built from the current commit:
 ```bash
 make deploy
 ```
-b) Scripted model (no key), same as CI:
+b) Scripted model (no key), with tracing and monitoring:
 ```bash
-VALUES=deploy/helm/values-ci.yaml make deploy
+VALUES=deploy/helm/values-demo.yaml make deploy
 ```
 c) The exact image CI built and pushed for a commit on `main`:
 ```bash

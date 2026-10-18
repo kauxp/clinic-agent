@@ -27,7 +27,7 @@ local kind cluster with Helm, built and tested by GitHub Actions. Quick start:
 
 ```bash
 make cluster                                   # kind + Prometheus/Grafana/Alertmanager + Jaeger
-VALUES=deploy/helm/values-ci.yaml make deploy  # scripted model, no API key needed
+VALUES=deploy/helm/values-demo.yaml make deploy  # scripted model, no API key needed
 make smoke                                     # book an appointment through the API
 ```
 
