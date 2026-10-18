@@ -20,6 +20,21 @@ Short demo of one loop closing (~10–15 min on the free tier):
 `python -m evals.loop --only book_basic,emergency_midflow,cancel_basic,spouse_privacy --runs 1`.
 Free-tier tip: `--runs 2`, `LLM_RPM=10`. Runs are checkpointed per file, so a daily-quota stop resumes where it left off.
 
+## Run it as a service on Kubernetes
+
+The agent also runs as an HTTP service (`service/`) with health checks, metrics, logs and traces, deployed to a
+local kind cluster with Helm, built and tested by GitHub Actions. Quick start:
+
+```bash
+make cluster                                   # kind + Prometheus/Grafana/Alertmanager + Jaeger
+VALUES=deploy/helm/values-ci.yaml make deploy  # scripted model, no API key needed
+make smoke                                     # book an appointment through the API
+```
+
+Details: [run instructions](docs/devops/RUN.md) · [architecture](docs/devops/ARCHITECTURE.md) ·
+[decisions](docs/devops/DECISIONS.md) · [runbook](docs/devops/RUNBOOK.md) · [baseline](docs/devops/BASELINE.md) ·
+[evidence](docs/devops/EVIDENCE.md)
+
 ## Layout
 
 ```
