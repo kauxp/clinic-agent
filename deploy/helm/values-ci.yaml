@@ -1,4 +1,3 @@
-# CI end-to-end test in a throwaway kind cluster: scripted model (no API key), image loaded locally.
 image:
   pullPolicy: Never
 config:

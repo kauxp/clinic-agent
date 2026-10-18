@@ -1,34 +1,28 @@
-# Defaults for a local kind/minikube cluster. Anything environment-specific goes in a values-<env>.yaml file.
-
 replicaCount: 2
 
 image:
   repository: ghcr.io/kauxp/clinic-agent
-  # Required: the git commit SHA the image was built from. No "latest", so the running version is always traceable.
   tag: ""
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
 
-# Agent behaviour. Changing these rolls the pods (checksum annotation) without a new image.
 config:
-  llmProvider: gemini          # gemini | scripted (scripted = deterministic, no API key; used by CI)
-  policyVersion: "latest"      # "latest" or a policy number from policies/; acts as a feature flag for agent behaviour
+  llmProvider: gemini
+  policyVersion: "latest"
   sessionTtlSeconds: 1800
   maxSessions: 500
   logLevel: INFO
-  llmRequestsPerMinute: 10     # per pod; total = replicas x this, keep under the API quota
+  llmRequestsPerMinute: 10
   agentModel: gemini-3.5-flash-lite
 
-# The API key lives in a Secret created outside the chart (scripts/create-secret.sh); never in values or git.
 llmSecret:
   name: clinic-agent-llm
   key: GEMINI_API_KEY
 
 service:
-  type: ClusterIP              # not exposed outside the cluster; use kubectl port-forward
+  type: ClusterIP
   port: 80
-  # Chats live in one pod's memory, so a client keeps talking to the same pod.
   sessionAffinity: ClientIP
 
 resources:
@@ -44,7 +38,6 @@ probes:
   liveness:  { path: /healthz, periodSeconds: 10, failureThreshold: 3 }
   readiness: { path: /readyz,  periodSeconds: 5,  failureThreshold: 2 }
 
-# Rolling update that never drops below the desired replica count.
 strategy:
   maxSurge: 1
   maxUnavailable: 0
@@ -53,7 +46,6 @@ podDisruptionBudget:
   enabled: true
   minAvailable: 1
 
-# Off by default: scaling down drops the in-memory chats on the removed pod.
 autoscaling:
   enabled: false
   minReplicas: 2
@@ -70,10 +62,9 @@ tracing:
   otlpEndpoint: http://jaeger.observability.svc.cluster.local:4318
 
 monitoring:
-  serviceMonitor: true         # needs the Prometheus Operator CRDs (kube-prometheus-stack)
+  serviceMonitor: true
   rules: true
   dashboard: true
-  # Service level objectives used by the alert rules
   slo:
-    availability: 0.995        # share of chat requests that must not fail with 5xx
-    latencySeconds: 10         # p95 time for one agent reply
+    availability: 0.995
+    latencySeconds: 10

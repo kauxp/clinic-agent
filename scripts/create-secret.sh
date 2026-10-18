@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Put the Gemini API key into a Kubernetes Secret. Reads GEMINI_API_KEY from the environment or from .env.
-# The key is piped straight to kubectl: never printed, never written to a file in the repo.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 if [ -z "${GEMINI_API_KEY:-}" ] && [ -f .env ]; then

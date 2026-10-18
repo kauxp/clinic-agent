@@ -1,3 +1,2 @@
-# Local demo without an API key: scripted model, everything else as in production (tracing, monitoring, policies).
 config:
   llmProvider: scripted

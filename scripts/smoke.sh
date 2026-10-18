@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# User journey from outside the cluster through a port-forward: version, open a chat, talk to the agent.
 set -euo pipefail
 PORT="${PORT:-8080}"
 kubectl -n clinic port-forward svc/clinic-agent "$PORT":80 >/dev/null 2>&1 &

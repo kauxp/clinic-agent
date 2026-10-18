@@ -19,7 +19,7 @@ class JsonFormatter(logging.Formatter):
             if hasattr(record, f):
                 out[f] = getattr(record, f)
         ctx = trace.get_current_span().get_span_context()
-        if ctx.is_valid:  # lets you jump from a log line to its trace
+        if ctx.is_valid:
             out["trace_id"] = format(ctx.trace_id, "032x")
         if record.exc_info:
             out["exc"] = self.formatException(record.exc_info)
@@ -32,4 +32,4 @@ def setup_logging(level: str) -> None:
     root = logging.getLogger()
     root.handlers[:] = [handler]
     root.setLevel(level)
-    logging.getLogger("uvicorn.access").disabled = True  # replaced by our own request log line
+    logging.getLogger("uvicorn.access").disabled = True

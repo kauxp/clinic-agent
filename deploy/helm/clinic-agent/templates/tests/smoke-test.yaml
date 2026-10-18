@@ -1,6 +1,3 @@
-# `helm test <release>` runs this pod inside the cluster against the Service.
-# Always: ready, version matches the deployed tag, a chat session opens.
-# With the scripted model: a full booking that must commit exactly one write.
 apiVersion: v1
 kind: Pod
 metadata:

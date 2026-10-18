@@ -1,5 +1,3 @@
-# The app namespace enforces the Kubernetes "restricted" Pod Security Standard:
-# pods must run as non-root, drop all capabilities, use seccomp and not escalate privileges.
 apiVersion: v1
 kind: Namespace
 metadata:

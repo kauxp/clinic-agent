@@ -18,7 +18,7 @@ def setup_tracing(app, version: str) -> bool:
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
     provider = TracerProvider(resource=Resource.create({"service.name": "clinic-agent", "service.version": version}))
-    provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))  # endpoint comes from the env var
+    provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
     trace.set_tracer_provider(provider)
     FastAPIInstrumentor.instrument_app(app, excluded_urls="healthz,readyz,metrics")
     return True

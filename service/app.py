@@ -78,7 +78,7 @@ class ChatSession:
     def __init__(self, policy: dict, llm):
         self.world = World()
         self.agent = Agent(self.world, policy, llm)
-        self.lock = threading.Lock()  # one message at a time per chat
+        self.lock = threading.Lock()
         self.last_used = time.monotonic()
         self.audit_seen = 0
         self.handoffs_seen = 0

@@ -1,5 +1,3 @@
-# Jaeger all-in-one: receives OpenTelemetry traces over OTLP/HTTP (4318) and serves the UI (16686).
-# In-memory storage: fine for a local cluster, traces are lost on restart.
 apiVersion: v1
 kind: Namespace
 metadata:

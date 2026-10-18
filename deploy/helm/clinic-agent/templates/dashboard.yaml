@@ -1,5 +1,4 @@
 {{- if .Values.monitoring.dashboard }}
-# Picked up by the Grafana sidecar in kube-prometheus-stack (label grafana_dashboard=1).
 apiVersion: v1
 kind: ConfigMap
 metadata:

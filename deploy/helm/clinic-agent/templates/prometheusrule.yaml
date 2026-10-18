@@ -1,7 +1,6 @@
 {{- if and .Values.monitoring.rules (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
 {{- $job := include "clinic-agent.fullname" . }}
 {{- $slo := .Values.monitoring.slo }}
-# SLIs as recording rules, then alerts on them. Each alert names its runbook entry (docs/devops/RUNBOOK.md).
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Create the local kind cluster and install monitoring (Prometheus, Grafana, Alertmanager) and tracing (Jaeger).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 KPS_VERSION=92.10.1
@@ -14,7 +13,6 @@ kubectl apply -f deploy/observability/jaeger.yaml
 
 kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
 if ! kubectl -n monitoring get secret grafana-admin >/dev/null 2>&1; then
-  # Random password, stored only in the cluster. Read it with: make grafana-password
   kubectl -n monitoring create secret generic grafana-admin \
     --from-literal=admin-user=admin --from-literal=admin-password="$(openssl rand -hex 16)"
 fi

@@ -1,4 +1,3 @@
-# Local kind cluster with the real model. The key comes from the clinic-agent-llm Secret (scripts/create-secret.sh).
 config:
   llmProvider: gemini
   policyVersion: "latest"

@@ -7,11 +7,11 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class Settings:
-    llm_provider: str          # "gemini" (real model) or "scripted" (deterministic, no API key; CI and demos)
-    policy_version: str        # "latest" or a number; switching it changes agent behaviour without a new image
-    session_ttl_seconds: int   # idle chats are dropped after this
-    max_sessions: int          # memory guard: refuse new chats beyond this
-    app_version: str           # git commit the image was built from (baked in at build time)
+    llm_provider: str
+    policy_version: str
+    session_ttl_seconds: int
+    max_sessions: int
+    app_version: str
     log_level: str
 
     @classmethod

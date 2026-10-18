@@ -1,5 +1,4 @@
 {{- if and .Values.monitoring.serviceMonitor (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
-# Tells Prometheus (kube-prometheus-stack) to scrape /metrics on every pod behind the Service.
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:

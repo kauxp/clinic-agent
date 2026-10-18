@@ -19,7 +19,6 @@ spec:
     metadata:
       labels: {{- include "clinic-agent.labels" . | nindent 8 }}
       annotations:
-        # A config change alone also rolls the pods, so they never run with stale settings.
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ include "clinic-agent.fullname" . }}
@@ -33,7 +32,6 @@ spec:
         runAsGroup: 10001
         fsGroup: 10001
         seccompProfile: { type: RuntimeDefault }
-      # Prefer spreading replicas across nodes (a no-op on a one-node kind cluster).
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -73,7 +71,6 @@ spec:
             periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
             failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
           lifecycle:
-            # Give the Service time to stop routing to this pod before it shuts down.
             preStop:
               exec: { command: ["sleep", "5"] }
           resources: {{- toYaml .Values.resources | nindent 12 }}

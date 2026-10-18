@@ -1,7 +1,3 @@
-# CD to the local kind cluster. GitHub's hosted runners can't reach a laptop, so this runs on a
-# self-hosted runner registered on the machine that hosts the cluster. The "local" environment can
-# require a reviewer's approval before the job starts (Settings -> Environments -> local).
-# Without the runner, `make deploy TAG=<sha>` performs the same steps by hand.
 name: deploy
 
 on:
@@ -15,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: deploy-local       # never two deploys at once
+  group: deploy-local
   cancel-in-progress: false
 
 jobs:
