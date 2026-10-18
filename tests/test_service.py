@@ -51,7 +51,7 @@ def test_metrics_count_tools_and_writes(client):
     assert 'clinic_tool_calls_total{ok="true",tool="verify_patient"}' in text
     assert 'clinic_writes_committed_total{tool="book_appointment"}' in text
     assert 'clinic_build_info{policy="0",provider="scripted",version="test-sha"}' in text
-    assert 'route="/v1/sessions/{session_id}/messages"' in text  # route template, not the raw id
+    assert 'route="/v1/sessions/{session_id}/messages"' in text
 
 
 def test_unknown_session_and_bad_input(client):
@@ -72,8 +72,8 @@ def test_session_limit_returns_503():
 def test_missing_api_key_keeps_pod_unready(monkeypatch):
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     c = TestClient(create_app(settings(llm_provider="gemini")))
-    assert c.get("/healthz").status_code == 200        # alive: don't restart it
-    assert c.get("/readyz").status_code == 503         # not ready: don't send it traffic
+    assert c.get("/healthz").status_code == 200
+    assert c.get("/readyz").status_code == 503
     assert c.post("/v1/sessions").status_code == 503
 
 
@@ -84,3 +84,18 @@ def test_patient_text_never_reaches_the_logs(client, caplog):
     out = "\n".join(JsonFormatter().format(r) for r in caplog.records)
     assert "Priya" not in out and "2001" not in out
     assert all(json.loads(line)["level"] for line in out.splitlines())
+
+
+def test_chat_created_on_one_thread_can_continue_on_another():
+    import threading
+
+    from agent.policy import load
+    from service.app import ChatSession
+    from service.scripted_llm import ScriptedLLM
+
+    sess = ChatSession(load(0), ScriptedLLM())
+    out = {}
+    t = threading.Thread(target=lambda: out.update(reply=sess.agent.respond("I'm Priya Shah, born 9 May 2001")))
+    t.start()
+    t.join()
+    assert "Shall I book" in out["reply"]

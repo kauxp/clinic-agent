@@ -41,7 +41,7 @@ INITIAL_APPOINTMENTS = [
 
 class World:
     def __init__(self):
-        self.db = sqlite3.connect(":memory:")
+        self.db = sqlite3.connect(":memory:", check_same_thread=False)
         self.db.row_factory = sqlite3.Row
         self.db.executescript(SCHEMA)
         self.hooks: dict[str, list] = {}  # tool name -> [fn(world, tool, args, result)]
