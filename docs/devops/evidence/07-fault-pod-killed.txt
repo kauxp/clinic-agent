@@ -1,20 +1,20 @@
 == Fault demo B: one pod is killed while traffic flows
 Client: a pod inside namespace clinic opens a new chat session every 0.2 s for 40 s (new sessions, so any pod may answer).
 
-t=10s $ kubectl -n clinic delete pod clinic-agent-745d5f7887-h6fw6
-pod "clinic-agent-745d5f7887-h6fw6" deleted from clinic namespace
+t=10s $ kubectl -n clinic delete pod clinic-agent-87695b668-swxz9
+pod "clinic-agent-87695b668-swxz9" deleted from clinic namespace
 t=13s $ kubectl -n clinic get pods   (replacement being created by the ReplicaSet)
-NAME                            READY   STATUS        RESTARTS   AGE
-clinic-agent-745d5f7887-h6fw6   1/1     Terminating   0          5m36s
-clinic-agent-745d5f7887-jwk2b   0/1     Running       0          4s
-clinic-agent-745d5f7887-x7w42   1/1     Running       0          5m32s
+NAME                           READY   STATUS        RESTARTS   AGE
+clinic-agent-87695b668-hdtml   0/1     Running       0          3s
+clinic-agent-87695b668-swxz9   1/1     Terminating   0          3m34s
+clinic-agent-87695b668-v9jrq   1/1     Running       0          3m38s
 
 t=40s client result:
-requests ok=189 failed=0 errors={}
+requests ok=186 failed=0 errors={}
 
 --- Verification: back to 2/2 ready
 NAME           READY   UP-TO-DATE   AVAILABLE   AGE
-clinic-agent   2/2     2            2           9m54s
+clinic-agent   2/2     2            2           4m46s
 NAME READY STATUS NODE
-clinic-agent-745d5f7887-jwk2b 1/1 Running clinic-worker
-clinic-agent-745d5f7887-x7w42 1/1 Running clinic-worker2
+clinic-agent-87695b668-hdtml 1/1 Running clinic-worker2
+clinic-agent-87695b668-v9jrq 1/1 Running clinic-worker

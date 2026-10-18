@@ -1,5 +1,5 @@
 $ make smoke   (port-forward to svc/clinic-agent, then a booking)
-version: {"version":"27464722832d","policy_version":0,"llm_provider":"scripted"}
+version: {"version":"8bba26f52bc2","policy_version":0,"llm_provider":"scripted"}
 patient: Hi, I need a GP appointment next week, mornings please
 agent:   Happy to help. Could I have your full name and date of birth?
         writes_committed: 0
