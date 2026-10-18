@@ -13,8 +13,8 @@ Each choice, the alternative I considered, and when the alternative would be rig
 ## Health checks
 
 - `startupProbe /healthz`: up to 60 s to boot before liveness starts.
-- `livenessProbe /healthz`: "is the process alive" → restart if not. It does **not** call Gemini, so a provider outage never restarts healthy pods.
-- `readinessProbe /readyz`: "can it serve" → policy loaded and model client configured (key present). An unready pod gets no traffic and blocks a rollout.
+- `livenessProbe /healthz`: "is the process alive" -> restart if not. It does **not** call Gemini, so a provider outage never restarts healthy pods.
+- `readinessProbe /readyz`: "can it serve" -> policy loaded and model client configured (key present). An unready pod gets no traffic and blocks a rollout.
 
 ## Resources and scaling
 
@@ -30,7 +30,7 @@ Each choice, the alternative I considered, and when the alternative would be rig
 
 ## CI/CD: GitHub Actions; automatic up to a tested image, deploy is a deliberate step
 
-- **CI (every PR and push to main):** lint + tests → secret scan, dependency audit, misconfiguration scan → build image tagged with the commit SHA → image vulnerability scan → deploy that image into a throwaway kind cluster with the real chart and run `helm test`.
+- **CI (every PR and push to main):** lint + tests -> secret scan, dependency audit, misconfiguration scan -> build image tagged with the commit SHA -> image vulnerability scan -> deploy that image into a throwaway kind cluster with the real chart and run `helm test`.
 - **Artifact:** the image, tagged with the 12-character commit SHA. Pushed to GHCR only from `main`, so every pushed image matches a reviewed commit.
 - **Deploy to my local cluster:** `make deploy TAG=<sha>` (or the `deploy` workflow on a self-hosted runner, behind the `local` environment's approval). Hosted GitHub runners can't reach a laptop; the approval point is "a human picks a commit that passed CI on main".
 - **Not Argo CD / GitOps:** more moving parts than this project needs. With a shared cluster I'd use Argo CD so the cluster pulls the desired state from git and shows drift.
@@ -49,7 +49,7 @@ Each choice, the alternative I considered, and when the alternative would be rig
 
 - **Metrics:** Prometheus client in the app; scraped via a ServiceMonitor. HTTP rate/errors/latency, model call latency and outcome, tool calls, committed writes, handoffs, active sessions, build info.
 - **Logs:** JSON to stdout, one line per request and per turn, with request id, session id and trace id. **Patient messages are never logged** (health data). Read with `kubectl logs`; a log store (Loki) would be the next addition.
-- **Traces:** OpenTelemetry → Jaeger. One trace per request: HTTP span → `agent.respond` → one `llm.chat` span per model call, with tool calls as span events. Shows where the time goes (almost always the model).
+- **Traces:** OpenTelemetry -> Jaeger. One trace per request: HTTP span -> `agent.respond` -> one `llm.chat` span per model call, with tool calls as span events. Shows where the time goes (almost always the model).
 - **SLOs:** 99.5% of chat requests without 5xx; p95 reply time under 10 s. Alerts in `PrometheusRule`, each linked to a runbook entry.
 
 ## Security

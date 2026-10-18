@@ -16,7 +16,7 @@ python -m pytest -q             # offline tests: guards, graders, end-to-end wit
 ```
 
 Also: `python -m evals.run_suite --runs 3 [--heldout] [--only id,id] [--judge]` scores one policy once.
-Short demo of one loop closing (~10–15 min on the free tier):
+Short demo of one loop closing (~10-15 min on the free tier):
 `python -m evals.loop --only book_basic,emergency_midflow,cancel_basic,spouse_privacy --runs 1`.
 Free-tier tip: `--runs 2`, `LLM_RPM=10`. Runs are checkpointed per file, so a daily-quota stop resumes where it left off.
 
@@ -31,8 +31,8 @@ VALUES=deploy/helm/values-demo.yaml make deploy  # scripted model, no API key ne
 make smoke                                     # book an appointment through the API
 ```
 
-Details: [run instructions](docs/devops/RUN.md) · [architecture](docs/devops/ARCHITECTURE.md) ·
-[decisions](docs/devops/DECISIONS.md) · [runbook](docs/devops/RUNBOOK.md) · [baseline](docs/devops/BASELINE.md) ·
+Details: [run instructions](docs/devops/RUN.md) | [architecture](docs/devops/ARCHITECTURE.md) |
+[decisions](docs/devops/DECISIONS.md) | [runbook](docs/devops/RUNBOOK.md) | [baseline](docs/devops/BASELINE.md) |
 [evidence](docs/devops/EVIDENCE.md)
 
 ## Layout
@@ -73,7 +73,7 @@ patient's message) and `red_flag_interlock` (emergency keywords block all writes
 
 1. Run the dev suite (N runs per scenario, since agents are stochastic).
 2. Diagnoser (strongest model, once per iteration) emits `{failure_class, evidence_turns, root_cause, fix_layer, patch}`
-   with `fix_layer ∈ prompt | tool_guard | state_logic | code_proposal` and a stated preference for code guards.
+   with `fix_layer in prompt | tool_guard | state_logic | code_proposal` and a stated preference for code guards.
 3. The patch is a **structured op** (`enable_guard`, `add_prompt_rule`, `edit_prompt_rule`, `set_param`) applied to a new
    policy version. Rules that name people/doctors/dates are rejected as overfit. `code_proposal` goes to `proposals/` for a human.
 4. Re-run the full suite. **Accept only if** target scenarios gain passes, no other scenario confirmed-regresses (a drop is

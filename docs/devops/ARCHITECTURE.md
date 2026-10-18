@@ -29,11 +29,11 @@ flowchart LR
 
 ## Request path (one patient message)
 
-1. Client `POST /v1/sessions/{id}/messages` → `kubectl port-forward` → Service `clinic-agent` (port 80).
+1. Client `POST /v1/sessions/{id}/messages` -> `kubectl port-forward` -> Service `clinic-agent` (port 80).
 2. The Service picks a ready pod; `sessionAffinity: ClientIP` keeps the same client on the same pod,
    because the chat (and its clinic database) lives in that pod's memory.
 3. Middleware gives the request an id, starts a timer and (if tracing is on) a trace span.
-4. `agent.respond()` loops: call Gemini → run tools (verify, search, book…) against the session's SQLite → repeat.
+4. `agent.respond()` loops: call Gemini -> run tools (verify, search, book...) against the session's SQLite -> repeat.
    Every model call is timed and counted (`clinic_llm_*`); every tool call is read back from the audit table
    and counted (`clinic_tool_calls_total`, `clinic_writes_committed_total`).
 5. Reply returned as JSON with `writes_committed` so the client (and the smoke test) can check state, not words.

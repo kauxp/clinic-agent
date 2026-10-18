@@ -11,13 +11,13 @@ Deployed version in all captures: image `ghcr.io/kauxp/clinic-agent:27464722832d
 | Running version is traceable to a commit | same file: image tag, `app.kubernetes.io/version` label and Helm release description all `27464722832d`; `/version` in [02](evidence/02-user-journey.txt); `clinic_build_info` in [04](evidence/04-metrics-alerts-traces.txt) |
 | A user journey works end to end | [02-user-journey.txt](evidence/02-user-journey.txt): booking through a port-forward, `writes_committed: 1`; in-cluster `helm test` in [06](evidence/06-fault-bad-release-auto-rollback.txt) |
 | Logs are structured, carry trace ids, and contain no patient text | [03-logs.txt](evidence/03-logs.txt) (the message "I'm Priya Shah, born 9 May 2001" was sent and does not appear) |
-| Metrics are scraped, alert rules and SLO recording rules are loaded, traces reach Jaeger, dashboard is provisioned | [04-metrics-alerts-traces.txt](evidence/04-metrics-alerts-traces.txt): both pods `up`; 5 alerts + 3 recording rules; trace `942df2e3…` is the same `trace_id` as a log line in 03 |
+| Metrics are scraped, alert rules and SLO recording rules are loaded, traces reach Jaeger, dashboard is provisioned | [04-metrics-alerts-traces.txt](evidence/04-metrics-alerts-traces.txt): both pods `up`; 5 alerts + 3 recording rules; trace `942df2e3...` is the same `trace_id` as a log line in 03 |
 | Security controls are enforced, not just configured | [05-security-controls.txt](evidence/05-security-controls.txt): root pod refused by Pod Security; uid 10001 + read-only filesystem; egress to port 80 blocked; another namespace can't reach the app while it can reach an unprotected service; no ServiceAccount token |
 | A bad release can't take the service down and is undone automatically | [06-fault-bad-release-auto-rollback.txt](evidence/06-fault-bad-release-auto-rollback.txt) |
 | Losing a pod doesn't fail requests | [07-fault-pod-killed.txt](evidence/07-fault-pod-killed.txt): 189 requests, 0 failed |
 | Manual rollback to an older commit and forward again | [08-rollback-and-traceability.txt](evidence/08-rollback-and-traceability.txt) |
 
-## Fault demonstration (symptom → hypothesis → evidence → change → verification)
+## Fault demonstration (symptom -> hypothesis -> evidence -> change -> verification)
 
 Release revision 4 switched the model provider to `gemini` without an API key in the cluster.
 
