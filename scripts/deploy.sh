@@ -22,6 +22,6 @@ kind load docker-image "$REPO:$TAG" --name clinic
 kubectl apply -f deploy/k8s/namespace.yaml
 helm upgrade --install clinic-agent deploy/helm/clinic-agent -n clinic -f "$VALUES" \
   --set image.repository="$REPO" --set image.tag="$TAG" --set image.pullPolicy=Never \
-  --atomic --wait --timeout 3m
+  --atomic --wait --timeout 3m --description "image $REPO:$TAG"
 helm history clinic-agent -n clinic --max 5
 helm test clinic-agent -n clinic --logs
